@@ -1,7 +1,10 @@
 # app/models.py
 
+import jwt
 from app import db
+from flask import current_app
 from flask_bcrypt import Bcrypt
+from datetime import datetime, timedelta
 
 class User(db.Model):
     """User table"""
@@ -14,7 +17,7 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     bids = db.relationship('Bid', backref='bidder', lazy=True)
 
-    def __init__(self, email, password):
+    def __init__(self, email, password, **kwargs):
         """Initialize user with email and password"""
         self.email = email
         self.password = Bcrypt().generate_password_hash(password).decode()
@@ -27,6 +30,33 @@ class User(db.Model):
         """Save user to database"""
         db.session.add(self)
         db.session.commit()
+
+    def generate_token(self, user_id):
+        """Generate access token"""
+        try:
+            payload = {
+                'exp': datetime.utcnow() + timedelta(minutes=5),
+                'iat': datetime.utcnow(),
+                'sub': user_id
+                }
+            # Create byte string token using payload and the SECRET key
+            jwt_string = jwt.encode(payload, current_app.config.get('SECRET'), algorithm='HS256')
+            return jwt_string
+
+
+        except Exception as e:
+            return str(e)
+
+    @staticmethod
+    def decode_token(token):
+        """Decode the access token from the auth header"""
+        try:
+            payload = jwt.decode(token, current_app.config.get('SECRET'))
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            return 'Expired token. Please login to get a new token'
+        except jwt.InvalidTokenError:
+            return "Invalid token. Please register or login"
 
 class Bid(db.Model):
     """All bids details"""

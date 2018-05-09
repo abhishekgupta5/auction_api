@@ -14,6 +14,7 @@ Mako==1.0.7
 MarkupSafe==1.0
 psycopg2==2.7.4
 pycparser==2.18
+PyJWT==1.6.1
 python-dateutil==2.7.2
 python-editor==1.0.3
 six==1.11.0

@@ -15,7 +15,7 @@ db = SQLAlchemy()
 
 def create_app(config_name):
 
-    from app.models import Item
+    from app.models import Item, Bid, User
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -112,5 +112,48 @@ def create_app(config_name):
         response = jsonify(result)
         response.status_code = 200
         return response
+
+    @app.route('/bids/user/<int:id>', methods=['GET'])
+    def bids_by_user(id):
+        result = []
+        user = User.query.get(id)
+        #If user_id doesn't exist
+        if not user:
+            obj = {
+                'message': 'User not registered'
+                }
+            result.append(obj)
+            response = jsonify(result)
+            response.status_code = 404
+            return response
+
+        bids = Bid.query.filter_by(placed_by=user.user_id).all()
+        #If no bid by current user
+        if not bids:
+            obj = {
+                'message': 'No bids placed by this User'
+                }
+            result.append(obj)
+            response = jsonify(result)
+            response.status_code = 404
+            return response
+
+        #Display bids by user and item names
+        for bid in bids:
+            item = Item.query.get(bid.bid_on_item)
+            obj = {
+                'bid_id': bid.bid_id,
+                'bid_price': bid.bid_amount,
+                'item_name': item.name
+                }
+            result.append(obj)
+        response = jsonify(result)
+        response.status_code = 200
+        return response
+
+
+    #Register auth blueprint
+    from .auth import auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     return app
