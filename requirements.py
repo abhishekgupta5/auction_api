@@ -3,6 +3,7 @@ click==6.7
 Flask==1.0.2
 Flask-API==1.0
 Flask-Migrate==2.1.1
+Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
 itsdangerous==0.24
 Jinja2==2.10
