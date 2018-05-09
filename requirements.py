@@ -1,7 +1,10 @@
 alembic==0.9.9
+bcrypt==3.1.4
+cffi==1.11.5
 click==6.7
 Flask==1.0.2
 Flask-API==1.0
+Flask-Bcrypt==0.7.1
 Flask-Migrate==2.1.1
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
@@ -10,6 +13,7 @@ Jinja2==2.10
 Mako==1.0.7
 MarkupSafe==1.0
 psycopg2==2.7.4
+pycparser==2.18
 python-dateutil==2.7.2
 python-editor==1.0.3
 six==1.11.0
