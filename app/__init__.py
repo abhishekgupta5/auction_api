@@ -1,7 +1,7 @@
 # app/__init__.py
 
 # Library imports
-from flask import request, jsonify, abort
+from flask import request, jsonify, abort, make_response
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
@@ -150,6 +150,45 @@ def create_app(config_name):
         response = jsonify(result)
         response.status_code = 200
         return response
+
+    @app.route('/item/bid', methods=['POST'])
+    def bid_on_item():
+        """Check whether user is logged in or not"""
+        auth_header = request.headers.get('Authorization')
+        access_token = auth_header.split(" ")[1]
+
+        if access_token:
+            #Attempt to decode the token and get the user_id
+            user_id = User.decode_token(access_token)
+            if not isinstance(user_id, str):
+                #User is authenticated
+
+                if request.method=='POST':
+                    bid_amount = float(request.data.get('bid_amount', ''))
+                    bid_on_item = int(request.data.get('bid_on_item', ''))
+                    if bid_amount and bid_on_item:
+                        placed_bid = Bid(placed_by=user_id, bid_amount=bid_amount, bid_on_item=bid_on_item)
+                        placed_bid.save()
+                        item = Item.query.filter_by(item_id=placed_bid.bid_on_item).first()
+                        response = jsonify({
+                            'status': 'bid successfully placed',
+                            'bid_id': placed_bid.bid_id,
+                            'bid_amount': placed_bid.bid_amount,
+                            'placed_on': item.name,
+                            })
+                        return make_response(response), 201
+                else:
+                    response = jsonify({
+                        'status': 'send a POST request with bid_amount and bid_on_item as form data to place bid'
+                        })
+                    return make_response(response), 200
+            else:
+                #User is not legit
+                message = user_id
+                response = {
+                    'message': message
+                    }
+                return make_response(jsonify(response)), 401
 
 
     #Register auth blueprint
