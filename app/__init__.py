@@ -24,6 +24,10 @@ def create_app(config_name):
     db.init_app(app)
 
 
+    @app.route('/')
+    def index():
+        return 'Auction API'
+
     @app.route('/items/all', methods=['GET'])
     def items_all():
         items = Item.get_all()
